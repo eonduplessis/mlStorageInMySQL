@@ -1,53 +1,69 @@
 import mysql.connector
 import io
-import sys
+
+config = {  'user' : 'root', 
+            'password' : 'password', 
+            'host' : '127.0.0.1', 
+            'port' : '3306', 
+            'database' : 'mlmodels'}
 
 def fetch_model_data(model_name):
-    mydb = mysql.connector.connect( user = 'root', 
-                                    password = 'qwerty', 
-                                    host = '127.0.0.1', 
-                                    port = '3306', 
-                                    database = 'mlmodels')
+    """
+    Expects a model name in target MySQL database and returns the content of the model_data column
+    """
+    try:
 
-    cursor = mydb.cursor()
+        mydb = mysql.connector.connect( **config )
 
-    query = ("SELECT id, name, model_data FROM models where name = '" + model_name + "'")
+        cursor = mydb.cursor()
 
-    cursor.execute(query)
+        query = (""" SELECT id, name, model_data FROM models where name = %s """)
 
-    data = "" 
+        cursor.execute(query, (model_name,))
 
-    for (model_data) in cursor:
-        data = model_data[2]
-        print(sys.getsizeof(data))
+        data = "" 
 
-    cursor.close()
-    mydb.close()
+        for (model_data) in cursor:
+            data = model_data[2]
+
+        return data
+
+    except mysql.connector.Error as error:
+        print("Database fetch query failed {}".format(error))
+    finally:
+        if (mydb.is_connected()):
+            cursor.close()
+            mydb.close()
     
-    return data
+    
 
 def write_model_data(model_name, model_data):
-    mydb = mysql.connector.connect( user = 'root', 
-                                    password = 'qwerty', 
-                                    host = '127.0.0.1', 
-                                    port = '3306', 
-                                    database = 'mlmodels')
+    """
+    Writes model data to an existing item in target MySQL database, matching model_name value
+    """
+    try:
 
-    cursor = mydb.cursor()
+        mydb = mysql.connector.connect( **config)
 
-    query = ("""UPDATE models SET model_data = %s WHERE name = %s """)
+        cursor = mydb.cursor()
 
-    data = model_data.read()
+        query = ("""UPDATE models SET model_data = %s WHERE name = %s """)
 
-    args = (data, model_name)
+        data = model_data.read()
 
-    result = cursor.execute(query, args)
+        args = (data, model_name)
+
+        result = cursor.execute(query, args)
+        
+        mydb.commit()
+        
+        return result
+
+    except mysql.connector.Error as error:
+        print("Database update query failed {}".format(error))
+
+    finally:
+        if (mydb.is_connected()):
+            cursor.close()
+            mydb.close()
     
-    mydb.commit()
-
-    if (mydb.is_connected()):
-        cursor.close()
-        mydb.close()
-    
-    return result
-

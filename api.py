@@ -8,8 +8,6 @@ app.config["DEBUG"] = True
 
 @app.route('/getModel/<modelName>', methods=['GET'])
 def getModel(modelName):
-    # if request.headers["Content-Type"] != 'application/json':
-    #     raise HTTPException(400, "Request should be in application/json format!")
     return send_file(io.BytesIO(fetch_model_data(modelName)),
                      attachment_filename='val.jpeg',
                      mimetype='image/jpg')
