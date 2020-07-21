@@ -1,9 +1,13 @@
 # mlStorageInMySQL
 
 Requires a valid MySQL DB server.
-docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql
+++
+docker run -p 3306:3306 --name memories -e MYSQL_ROOT_PASSWORD=password -d mysql:5.6
+
+
 
 DB scripts:
+++
 CREATE DATABASE mlmodels;
 
 USE mlmodels;
@@ -16,4 +20,6 @@ CREATE TABLE models
     PRIMARY KEY (id)
 );
 
-INSERT INTO models (name, model_data) VALUES ('test_model', 'test_data')
+INSERT INTO models (name, model_data) VALUES ('test_model', 'test_data');
+
+COMMIT;
